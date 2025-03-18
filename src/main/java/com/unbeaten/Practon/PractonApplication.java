@@ -4,9 +4,12 @@ import com.unbeaten.Practon.models.Person;
 import com.unbeaten.Practon.models.Skill;
 import com.unbeaten.Practon.models.Address;
 import com.unbeaten.Practon.models.Certification;
+import com.unbeaten.Practon.models.PaymentDetails;
+import com.unbeaten.Practon.models.Payment;
 import com.unbeaten.Practon.repositories.PersonRepository;
 import com.unbeaten.Practon.repositories.SkillRepository;
 import com.unbeaten.Practon.repositories.CertificationRepository;
+import com.unbeaten.Practon.repositories.PaymentRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,7 +26,7 @@ public class PractonApplication {
 
     @Bean
     CommandLineRunner commandLineRunner(PersonRepository personRepo, SkillRepository skillRepo,
-            CertificationRepository certRepo) {
+            CertificationRepository certRepo, PaymentRepository paymentRepo) {
         return args -> {
             // Creating Address objects
             Address address1 = new Address("123 Main St", "Springfield", "IL", "USA", "62701");
@@ -57,6 +60,16 @@ public class PractonApplication {
 
             // Save all Certification objects
             certRepo.saveAll(List.of(cert1, cert2, cert3));
+
+            // Creating Payment objects and associating them with Persons and Skills
+            PaymentDetails paymentDetails1 = new PaymentDetails("Credit Card", "TXN123456", 200.0, "USD", "2023-04-01");
+            PaymentDetails paymentDetails2 = new PaymentDetails("PayPal", "TXN654321", 150.0, "USD", "2023-04-02");
+
+            Payment payment1 = new Payment(paymentDetails1, people.get(0), skill1);
+            Payment payment2 = new Payment(paymentDetails2, people.get(1), skill2);
+
+            // Save all Payment objects
+            paymentRepo.saveAll(List.of(payment1, payment2));
         };
     }
 }
