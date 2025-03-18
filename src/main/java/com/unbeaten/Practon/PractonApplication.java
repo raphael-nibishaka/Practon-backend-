@@ -3,8 +3,10 @@ package com.unbeaten.Practon;
 import com.unbeaten.Practon.models.Person;
 import com.unbeaten.Practon.models.Skill;
 import com.unbeaten.Practon.models.Address;
+import com.unbeaten.Practon.models.Certification;
 import com.unbeaten.Practon.repositories.PersonRepository;
 import com.unbeaten.Practon.repositories.SkillRepository;
+import com.unbeaten.Practon.repositories.CertificationRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,12 +22,13 @@ public class PractonApplication {
     }
 
     @Bean
-    CommandLineRunner commandLineRunner(PersonRepository personRepo, SkillRepository skillRepo) {
+    CommandLineRunner commandLineRunner(PersonRepository personRepo, SkillRepository skillRepo,
+            CertificationRepository certRepo) {
         return args -> {
             // Creating Address objects
             Address address1 = new Address("123 Main St", "Springfield", "IL", "USA", "62701");
             Address address2 = new Address("456 Elm St", "Metropolis", "NY", "USA", "10001");
-            Address address3 = new Address("789 Oak S", "Gotham", "NJ", "USA", "07001");
+            Address address3 = new Address("789 Oak St", "Gotham", "NJ", "USA", "07001");
 
             // Creating multiple Person objects with addresses
             List<Person> people = List.of(
@@ -43,6 +46,17 @@ public class PractonApplication {
 
             // Save all Skill objects
             skillRepo.saveAll(List.of(skill1, skill2, skill3));
+
+            // Creating Certification objects and associating them with Persons and Skills
+            Certification cert1 = new Certification("Java Certification", "Oracle", "2023-01-15", people.get(0),
+                    skill1);
+            Certification cert2 = new Certification("SQL Certification", "Microsoft", "2022-11-20", people.get(1),
+                    skill2);
+            Certification cert3 = new Certification("Web Development Certification", "W3C", "2023-03-10", people.get(2),
+                    skill3);
+
+            // Save all Certification objects
+            certRepo.saveAll(List.of(cert1, cert2, cert3));
         };
     }
 }
