@@ -14,6 +14,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class PractonApplication {
     }
 
     @Bean
+    @Transactional
     CommandLineRunner commandLineRunner(PersonRepository personRepo, SkillRepository skillRepo,
             CertificationRepository certRepo, PaymentRepository paymentRepo) {
         return args -> {
@@ -70,6 +72,28 @@ public class PractonApplication {
 
             // Save all Payment objects
             paymentRepo.saveAll(List.of(payment1, payment2));
+
+            // Test bidirectional relationships and print results
+            System.out.println("=== Persons and their Skills ===");
+            for (Person person : personRepo.findAll()) {
+                System.out.println("Person: " + person.getFirstname() + " " + person.getLastname());
+                for (Skill skill : skillRepo.findByOwner(person)) {
+                    System.out.println("  Skill: " + skill.getName() + " - " + skill.getDescription());
+                }
+                for (Certification cert : person.getCertifications()) {
+                    System.out.println("  Certification: " + cert.getName() + " - " + cert.getIssuingOrganization());
+                }
+            }
+
+            System.out.println("\n=== Payments and their Details ===");
+            for (Payment payment : paymentRepo.findAll()) {
+                System.out.println("Payment ID: " + payment.getId());
+                System.out.println(
+                        "  Payer: " + payment.getPayer().getFirstname() + " " + payment.getPayer().getLastname());
+                System.out.println("  Skill: " + payment.getSkill().getName());
+                System.out.println("  Amount: " + payment.getPaymentDetails().getAmount() + " "
+                        + payment.getPaymentDetails().getCurrency());
+            }
         };
     }
 }

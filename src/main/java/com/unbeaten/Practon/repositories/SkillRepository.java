@@ -1,6 +1,7 @@
 package com.unbeaten.Practon.repositories;
 
 import com.unbeaten.Practon.models.Skill;
+import com.unbeaten.Practon.models.Person;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +17,7 @@ public interface SkillRepository extends JpaRepository<Skill, Integer> {
     // Example of a custom query using JPQL
     @Query("SELECT s FROM Skill s WHERE s.description LIKE %:keyword%")
     List<Skill> findByDescriptionContaining(@Param("keyword") String keyword);
+
+    // Add this method to find skills by owner
+    List<Skill> findByOwner(Person owner);
 }

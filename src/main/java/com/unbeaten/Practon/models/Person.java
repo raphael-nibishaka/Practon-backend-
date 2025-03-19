@@ -1,6 +1,7 @@
 package com.unbeaten.Practon.models;
 
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "persons")
@@ -8,7 +9,7 @@ public class Person {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer code;
+    private Integer id;
 
     @Column(name = "firstname", nullable = false)
     private String firstname;
@@ -22,13 +23,17 @@ public class Person {
     @Embedded
     private Address address; // Embedded Address field
 
+    // One-to-Many relationship with Certification
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Certification> certifications;
+
     // Default constructor
     public Person() {
     }
 
     // Constructor with all fields
     public Person(String firstname, String lastname, String email, Address address) {
-      
+
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
@@ -43,15 +48,12 @@ public class Person {
 
     }
 
-
-
-
     public Integer getCode() {
-        return code;
+        return id;
     }
 
     public void setCode(Integer code) {
-        this.code = code;
+        this.id = code;
     }
 
     public String getFirstname() {
@@ -84,5 +86,13 @@ public class Person {
 
     public void setAddress(Address address) {
         this.address = address;
+    }
+
+    public List<Certification> getCertifications() {
+        return certifications;
+    }
+
+    public void setCertifications(List<Certification> certifications) {
+        this.certifications = certifications;
     }
 }
