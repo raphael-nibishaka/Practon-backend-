@@ -1,6 +1,7 @@
 package com.unbeaten.Practon.models;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
 @Entity
@@ -20,11 +21,15 @@ public class Person {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
+    private String password;
+    private String fieldOfInterest;
+
     @Embedded
     private Address address; // Embedded Address field
 
     // One-to-Many relationship with Certification
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<Certification> certifications;
 
     // Default constructor
@@ -46,6 +51,14 @@ public class Person {
         this.lastname = lastname;
         this.email = email;
 
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Integer getCode() {
@@ -84,6 +97,14 @@ public class Person {
         return address;
     }
 
+    public String getFieldOfInterest() {
+        return fieldOfInterest;
+    }
+
+    public void setFieldOfInterest(String fieldOfInterest) {
+        this.fieldOfInterest = fieldOfInterest;
+    }
+
     public void setAddress(Address address) {
         this.address = address;
     }
@@ -94,5 +115,14 @@ public class Person {
 
     public void setCertifications(List<Certification> certifications) {
         this.certifications = certifications;
+    }
+
+    // Add a method to get certifications without owner reference
+    @Transient
+    public List<Certification> getCertificationsWithoutOwner() {
+        if (certifications != null) {
+            certifications.forEach(cert -> cert.setOwner(null));
+        }
+        return certifications;
     }
 }

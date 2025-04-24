@@ -1,6 +1,7 @@
 package com.unbeaten.Practon.models;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "certifications")
@@ -22,6 +23,7 @@ public class Certification {
     // Many-to-One relationship with Person (the owner of the certification)
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
+    @JsonIgnore
     private Person owner;
 
     // Many-to-One relationship with Skill (the skill related to the certification)
@@ -89,5 +91,14 @@ public class Certification {
 
     public void setSkill(Skill skill) {
         this.skill = skill;
+    }
+
+    // Add a method to get owner without certifications
+    @Transient
+    public Person getOwnerWithoutCertifications() {
+        if (owner != null) {
+            owner.setCertifications(null);
+        }
+        return owner;
     }
 }

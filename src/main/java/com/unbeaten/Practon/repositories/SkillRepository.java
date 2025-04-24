@@ -20,4 +20,6 @@ public interface SkillRepository extends JpaRepository<Skill, Integer> {
 
     // Add this method to find skills by owner
     List<Skill> findByOwner(Person owner);
+
+    List<Skill> findByOwnerId(Integer ownerId);
 }

@@ -1,6 +1,7 @@
 package com.unbeaten.Practon.models;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "skills")
@@ -19,6 +20,7 @@ public class Skill {
     // Many-to-One relationship with Person (the owner of the skill)
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
+    @JsonIgnoreProperties({"certifications", "certificationsWithoutOwner"})
     private Person owner;
 
     // Default constructor

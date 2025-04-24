@@ -37,7 +37,7 @@ public class PractonApplication {
 
             // Creating multiple Person objects with addresses
             List<Person> people = List.of(
-                    new Person("Mike", "Mugisha", "mugisha@gmail.com", address1),
+                    new Person("Mike", "Mugisha", "mugisha@gmail.com",address1),
                     new Person("John", "Doe", "john.doe@example.com", address2),
                     new Person("Alice", "Smith", "alice.smith@example.com", address3));
 
