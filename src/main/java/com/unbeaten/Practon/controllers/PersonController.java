@@ -43,7 +43,7 @@ public class PersonController {
 
         if (person.isPresent() && person.get().getPassword().equals(loginData.getPassword())) {
             Person user = person.get();
-            user.setPassword("********"); // Mask password before sending response
+            user.setPassword("*******"); // Mask password before sending response
             return ResponseEntity.ok(user);
         }
 
