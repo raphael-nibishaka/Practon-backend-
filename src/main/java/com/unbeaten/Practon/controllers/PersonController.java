@@ -57,7 +57,7 @@ public class PersonController {
         return ResponseEntity.ok("Person saved!");
     }
 
-    // ✅ Get all persons
+    // ✅ Get all persons nana
     @GetMapping("/persons")
     public ResponseEntity<List<Person>> getAllPersons() {
         return ResponseEntity.ok(personService.findAllPersons());
