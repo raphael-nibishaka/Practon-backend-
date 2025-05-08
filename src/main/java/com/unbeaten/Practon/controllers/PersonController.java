@@ -1,6 +1,8 @@
 package com.unbeaten.Practon.controllers;
 
 import com.unbeaten.Practon.models.Person;
+import com.unbeaten.Practon.models.Role;
+import com.unbeaten.Practon.exceptions.UnauthorizedException;
 import com.unbeaten.Practon.services.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,17 +28,18 @@ public class PersonController {
         return "Hello world";
     }
 
-    // ✅ Register a new user
+    // Register a new user (default role is USER)
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody Person person) {
         if (personService.existsByEmail(person.getEmail())) {
             return ResponseEntity.status(401).body("Email already registered!");
         }
+        person.setRole(Role.USER); // Ensure new users get USER role
         personService.addPerson(person);
         return ResponseEntity.ok().body("Successfully registered");
     }
 
-    // ✅ Login user and return user details (excluding password)
+    // Login user and return user details (excluding password)
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Person loginData) {
         Optional<Person> person = personService.findByEmail(loginData.getEmail());
@@ -50,17 +53,56 @@ public class PersonController {
         return ResponseEntity.status(401).body("Invalid email or password!");
     }
 
-    // ✅ Save new person (for internal use or testing)
+    // Create a new organization (only ADMIN can do this)
+    @PostMapping("/create-organization")
+    public ResponseEntity<?> createOrganization(@RequestBody Person organization, @RequestParam Integer adminId) {
+        Person admin = personService.findPersonById(adminId);
+        if (admin == null || admin.getRole() != Role.ADMIN) {
+            throw new UnauthorizedException("Only administrators can create organizations");
+        }
+
+        if (personService.existsByEmail(organization.getEmail())) {
+            return ResponseEntity.status(401).body("Email already registered!");
+        }
+
+        organization.setRole(Role.ORGANIZATION);
+        personService.addPerson(organization);
+        return ResponseEntity.ok().body("Organization created successfully");
+    }
+
+    // Promote a user to admin (only ADMIN can do this)
+    @PostMapping("/promote-to-admin/{userId}")
+    public ResponseEntity<?> promoteToAdmin(@PathVariable Integer userId, @RequestParam Integer adminId) {
+        Person admin = personService.findPersonById(adminId);
+        if (admin == null || admin.getRole() != Role.ADMIN) {
+            throw new UnauthorizedException("Only administrators can promote users");
+        }
+
+        Person user = personService.findPersonById(userId);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        user.setRole(Role.ADMIN);
+        personService.updatePerson(user);
+        return ResponseEntity.ok().body("User promoted to admin successfully");
+    }
+
+    // Get all persons (only ADMIN can do this)
+    @GetMapping("/persons")
+    public ResponseEntity<?> getAllPersons(@RequestParam Integer adminId) {
+        Person admin = personService.findPersonById(adminId);
+        if (admin == null || admin.getRole() != Role.ADMIN) {
+            throw new UnauthorizedException("Only administrators can view all users");
+        }
+        return ResponseEntity.ok(personService.findAllPersons());
+    }
+
+    // Save new person (for internal use or testing)
     @PostMapping("/person")
     public ResponseEntity<String> savePerson(@RequestBody Person person) {
         personService.addPerson(person);
         return ResponseEntity.ok("Person saved!");
-    }
-
-    // ✅ Get all persons nana
-    @GetMapping("/persons")
-    public ResponseEntity<List<Person>> getAllPersons() {
-        return ResponseEntity.ok(personService.findAllPersons());
     }
 
     @PostMapping("/forgot-password")
