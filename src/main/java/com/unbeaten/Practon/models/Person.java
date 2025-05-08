@@ -24,6 +24,10 @@ public class Person {
     private String password;
     private String fieldOfInterest;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER; // Default role is USER
+
     @Embedded
     private Address address; // Embedded Address field
 
@@ -115,6 +119,14 @@ public class Person {
 
     public void setCertifications(List<Certification> certifications) {
         this.certifications = certifications;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     // Add a method to get certifications without owner reference
