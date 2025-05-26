@@ -1,5 +1,6 @@
 package com.unbeaten.Practon.controllers;
 
+import com.unbeaten.Practon.models.Address;
 import com.unbeaten.Practon.models.Person;
 import com.unbeaten.Practon.models.Role;
 import com.unbeaten.Practon.exceptions.UnauthorizedException;
@@ -42,9 +43,9 @@ public class PersonController {
     // Login user and return user details (excluding password)
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Person loginData) {
-        Optional<Person> person = personService.findByEmail(loginData.getEmail());
+        Optional<Person> person = personService.authenticate(loginData.getEmail(), loginData.getPassword());
 
-        if (person.isPresent() && person.get().getPassword().equals(loginData.getPassword())) {
+        if (person.isPresent()) {
             Person user = person.get();
             user.setPassword("*******"); // Mask password before sending response
             return ResponseEntity.ok(user);
@@ -53,21 +54,22 @@ public class PersonController {
         return ResponseEntity.status(401).body("Invalid email or password!");
     }
 
-    // Create a new organization (only ADMIN can do this)
+    // Create a new organization
     @PostMapping("/create-organization")
-    public ResponseEntity<?> createOrganization(@RequestBody Person organization, @RequestParam Integer adminId) {
-        Person admin = personService.findPersonById(adminId);
-        if (admin == null || admin.getRole() != Role.ADMIN) {
-            throw new UnauthorizedException("Only administrators can create organizations");
-        }
-
+    public ResponseEntity<?> createOrganization(@RequestBody Person organization) {
         if (personService.existsByEmail(organization.getEmail())) {
             return ResponseEntity.status(401).body("Email already registered!");
         }
 
-        organization.setRole(Role.ORGANIZATION);
-        personService.addPerson(organization);
-        return ResponseEntity.ok().body("Organization created successfully");
+        try {
+            organization.setRole(Role.ORGANIZATION);
+            personService.addPerson(organization);
+            return ResponseEntity.ok().body("Organization created successfully");
+        } catch (Exception e) {
+            System.out.println("Error creating organization: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error creating organization: " + e.getMessage());
+        }
     }
 
     // Promote a user to admin (only ADMIN can do this)
@@ -88,13 +90,31 @@ public class PersonController {
         return ResponseEntity.ok().body("User promoted to admin successfully");
     }
 
-    // Get all persons (only ADMIN can do this)
+    // Get all persons (ADMIN and ORGANIZATION can do this)
     @GetMapping("/persons")
-    public ResponseEntity<?> getAllPersons(@RequestParam Integer adminId) {
-        Person admin = personService.findPersonById(adminId);
-        if (admin == null || admin.getRole() != Role.ADMIN) {
-            throw new UnauthorizedException("Only administrators can view all users");
+    public ResponseEntity<?> getAllPersons(@RequestParam(required = false) Integer adminId,
+                                         @RequestParam(required = false) Integer orgId) {
+        if (adminId == null && orgId == null) {
+            return ResponseEntity.badRequest().body("Either adminId or orgId must be provided");
         }
+
+        Person user = null;
+        if (adminId != null) {
+            user = personService.findPersonById(adminId);
+            if (user != null && user.getRole() != Role.ADMIN) {
+                return ResponseEntity.status(403).body("User is not an admin");
+            }
+        } else if (orgId != null) {
+            user = personService.findPersonById(orgId);
+            if (user != null && user.getRole() != Role.ORGANIZATION) {
+                return ResponseEntity.status(403).body("User is not an organization");
+            }
+        }
+
+        if (user == null) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
         return ResponseEntity.ok(personService.findAllPersons());
     }
 

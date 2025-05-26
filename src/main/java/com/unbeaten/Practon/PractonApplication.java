@@ -30,70 +30,8 @@ public class PractonApplication {
     CommandLineRunner commandLineRunner(PersonRepository personRepo, SkillRepository skillRepo,
             CertificationRepository certRepo, PaymentRepository paymentRepo) {
         return args -> {
-            // Creating Address objects
-            Address address1 = new Address("123 Main St", "Springfield", "IL", "USA", "62701");
-            Address address2 = new Address("456 Elm St", "Metropolis", "NY", "USA", "10001");
-            Address address3 = new Address("789 Oak St", "Gotham", "NJ", "USA", "07001");
 
-            // Creating multiple Person objects with addresses
-            List<Person> people = List.of(
-                    new Person("Mike", "Mugisha", "mugisha@gmail.com",address1),
-                    new Person("John", "Doe", "john.doe@example.com", address2),
-                    new Person("Alice", "Smith", "alice.smith@example.com", address3));
 
-            // Save all Person objects
-            personRepo.saveAll(people);
-
-            // Creating Skill objects and associating them with Persons
-            Skill skill1 = new Skill("Java Programming", "Proficient in Java", people.get(0));
-            Skill skill2 = new Skill("Database Management", "Experienced with SQL databases", people.get(1));
-            Skill skill3 = new Skill("Web Development", "Skilled in HTML, CSS, and JavaScript", people.get(2));
-
-            // Save all Skill objects
-            skillRepo.saveAll(List.of(skill1, skill2, skill3));
-
-            // Creating Certification objects and associating them with Persons and Skills
-            Certification cert1 = new Certification("Java Certification", "Oracle", "2023-01-15", people.get(0),
-                    skill1);
-            Certification cert2 = new Certification("SQL Certification", "Microsoft", "2022-11-20", people.get(1),
-                    skill2);
-            Certification cert3 = new Certification("Web Development Certification", "W3C", "2023-03-10", people.get(2),
-                    skill3);
-
-            // Save all Certification objects
-            certRepo.saveAll(List.of(cert1, cert2, cert3));
-
-            // Creating Payment objects and associating them with Persons and Skills
-            PaymentDetails paymentDetails1 = new PaymentDetails("Credit Card", "TXN123456", 200.0, "USD", "2023-04-01");
-            PaymentDetails paymentDetails2 = new PaymentDetails("PayPal", "TXN654321", 150.0, "USD", "2023-04-02");
-
-            Payment payment1 = new Payment(paymentDetails1, people.get(0), skill1);
-            Payment payment2 = new Payment(paymentDetails2, people.get(1), skill2);
-
-            // Save all Payment objects
-            paymentRepo.saveAll(List.of(payment1, payment2));
-
-            // Test bidirectional relationships and print results
-            System.out.println("=== Persons and their Skills ===");
-            for (Person person : personRepo.findAll()) {
-                System.out.println("Person: " + person.getFirstname() + " " + person.getLastname());
-                for (Skill skill : skillRepo.findByOwner(person)) {
-                    System.out.println("  Skill: " + skill.getName() + " - " + skill.getDescription());
-                }
-                for (Certification cert : person.getCertifications()) {
-                    System.out.println("  Certification: " + cert.getName() + " - " + cert.getIssuingOrganization());
-                }
-            }
-
-            System.out.println("\n=== Payments and their Details ===");
-            for (Payment payment : paymentRepo.findAll()) {
-                System.out.println("Payment ID: " + payment.getId());
-                System.out.println(
-                        "  Payer: " + payment.getPayer().getFirstname() + " " + payment.getPayer().getLastname());
-                System.out.println("  Skill: " + payment.getSkill().getName());
-                System.out.println("  Amount: " + payment.getPaymentDetails().getAmount() + " "
-                        + payment.getPaymentDetails().getCurrency());
-            }
         };
     }
 }
