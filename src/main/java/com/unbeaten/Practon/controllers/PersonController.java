@@ -4,9 +4,14 @@ import com.unbeaten.Practon.models.Address;
 import com.unbeaten.Practon.models.Person;
 import com.unbeaten.Practon.models.Role;
 import com.unbeaten.Practon.exceptions.UnauthorizedException;
+import com.unbeaten.Practon.security.JwtTokenProvider;
 import com.unbeaten.Practon.services.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -22,6 +27,13 @@ public class PersonController {
 
     @Autowired
     private PersonService personService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtTokenProvider tokenProvider;
+
     private Map<String, String> passwordResetTokens = new HashMap<>();
 
     @GetMapping("/hello")
@@ -40,18 +52,36 @@ public class PersonController {
         return ResponseEntity.ok().body("Successfully registered");
     }
 
-    // Login user and return user details (excluding password)
+    // Login user and return JWT token
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Person loginData) {
-        Optional<Person> person = personService.authenticate(loginData.getEmail(), loginData.getPassword());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    loginData.getEmail(),
+                    loginData.getPassword()
+                )
+            );
 
-        if (person.isPresent()) {
-            Person user = person.get();
-            user.setPassword("*******"); // Mask password before sending response
-            return ResponseEntity.ok(user);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = tokenProvider.generateToken(authentication);
+
+            Optional<Person> personOpt = personService.findByEmail(loginData.getEmail());
+            if (personOpt.isPresent()) {
+                Person user = personOpt.get();
+                user.setPassword("*******"); // Mask password before sending response
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("token", jwt);
+                response.put("user", user);
+
+                return ResponseEntity.ok(response);
+            }
+
+            return ResponseEntity.status(401).body("Invalid email or password!");
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Invalid email or password!");
         }
-
-        return ResponseEntity.status(401).body("Invalid email or password!");
     }
 
     // Create a new organization
